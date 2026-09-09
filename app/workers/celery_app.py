@@ -6,6 +6,9 @@ celery_app = Celery(
     "cognilead_worker",
     broker=settings.CELERY_BROKER_URL,
     backend=settings.CELERY_RESULT_BACKEND,
+    include=[
+        "app.workers.lead_tasks",
+    ],
 )
 
 # Standard direct exchange for routing marketing automation events
