@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 import uuid
 from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, Text
@@ -14,22 +14,12 @@ class Lead(Base, TenantMixin, TimestampMixin):
         Index("idx_leads_org_email_created", "organization_id", "email", "created_at"),
     )
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid.uuid4,
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     source_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
-        ForeignKey("lead_sources.id", ondelete="RESTRICT"),
-        nullable=False,
-        index=True,
+        UUID(as_uuid=True), ForeignKey("lead_sources.id", ondelete="RESTRICT"), nullable=False, index=True
     )
     campaign_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True),
-        ForeignKey("campaigns.id", ondelete="SET NULL"),
-        nullable=True,
-        index=True,
+        UUID(as_uuid=True), ForeignKey("campaigns.id", ondelete="SET NULL"), nullable=True, index=True
     )
     first_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
     last_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
@@ -47,13 +37,54 @@ class Lead(Base, TenantMixin, TimestampMixin):
     status: Mapped[str] = mapped_column(String(32), default="NEW", nullable=False)
     score: Mapped[int] = mapped_column(Integer, default=0, nullable=False, index=True)
     assigned_to: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True),
-        ForeignKey("users.id", ondelete="SET NULL"),
-        nullable=True,
-        index=True,
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True
     )
     last_contacted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     converted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
-    source: Mapped["LeadSource"] = relationship("LeadSource", back_populates="leads")
-    campaign: Mapped["Campaign | None"] = relationship("Campaign", back_populates="leads")
+    source: Mapped["LeadSource"] = relationship("LeadSource", back_populates="leads")  # type: ignore[name-defined] # noqa: F821
+    campaign: Mapped["Campaign | None"] = relationship("Campaign", back_populates="leads")  # type: ignore[name-defined] # noqa: F821
+    score_record: Mapped["LeadScore | None"] = relationship(
+        "LeadScore", back_populates="lead", cascade="all, delete-orphan", uselist=False
+    )
+    activities: Mapped[list["LeadActivity"]] = relationship(
+        "LeadActivity", back_populates="lead", cascade="all, delete-orphan", order_by="LeadActivity.created_at.desc()"
+    )
+
+
+class LeadScore(Base):
+    __tablename__ = "lead_scores"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    lead_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("leads.id", ondelete="CASCADE"), unique=True, nullable=False
+    )
+    score: Mapped[int] = mapped_column(Integer, nullable=False)
+    previous_score: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    scoring_method: Mapped[str] = mapped_column(String(32), default="RULE_BASED", nullable=False)
+    score_breakdown: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    calculated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False
+    )
+
+    lead: Mapped["Lead"] = relationship("Lead", back_populates="score_record")
+
+
+class LeadActivity(Base):
+    __tablename__ = "lead_activities"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    lead_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("leads.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    user_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+    activity_type: Mapped[str] = mapped_column(String(32), nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+    metadata_: Mapped[dict[str, Any]] = mapped_column("metadata", JSONB, default=dict, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False, index=True
+    )
+
+    lead: Mapped["Lead"] = relationship("Lead", back_populates="activities")

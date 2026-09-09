@@ -7,12 +7,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from app.core.config import settings
 from app.models.base import Base
-
-# Import all models so Alembic autogenerate detects tables
-import app.models.organization  # noqa: F401
-import app.models.user  # noqa: F401
-import app.models.campaign  # noqa: F401
-import app.models.lead  # noqa: F401
+import app.models  # Loads organizations, users, leads, campaigns, crm, scores, and activities
 
 config = context.config
 
