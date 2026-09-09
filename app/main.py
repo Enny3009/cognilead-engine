@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import text
 import structlog
 
+from app.api.v1.router import api_router
 from app.core.config import settings
 from app.core.database import engine
 from app.core.logging import setup_logging
@@ -39,6 +40,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Mount all V1 API routes
+app.include_router(api_router, prefix=settings.API_V1_STR)
 
 
 @app.get("/health/live", tags=["Health"], status_code=status.HTTP_200_OK)
