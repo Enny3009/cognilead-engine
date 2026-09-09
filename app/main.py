@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import text
 import structlog
 
+import app.models  # Ensures all ORM relationships are registered
 from app.api.v1.router import api_router
 from app.core.config import settings
 from app.core.database import engine
