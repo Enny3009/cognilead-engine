@@ -1,0 +1,32 @@
+FROM python:3.12-slim-bookworm AS builder
+
+WORKDIR /build
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY pyproject.toml README.md ./
+COPY app ./app
+
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir .
+
+FROM python:3.12-slim-bookworm AS runtime
+
+WORKDIR /app
+
+RUN groupadd -g 1001 appgroup && \
+    useradd -u 1001 -g appgroup -s /bin/bash -m appuser
+
+COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+
+COPY . /app
+
+RUN chown -R appuser:appgroup /app
+
+USER appuser
+
+CMD ["celery", "-A", "app.workers.celery_app.celery_app", "worker", "--loglevel=info"]

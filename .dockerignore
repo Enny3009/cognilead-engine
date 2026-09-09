@@ -1,0 +1,15 @@
+cat << 'EOF' > .dockerignore
+.venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.git
+.gitignore
+.pytest_cache
+.mypy_cache
+.ruff_cache
+htmlcov
+.coverage
+*.log
+EOF

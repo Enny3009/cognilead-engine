@@ -1,0 +1,64 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "cognilead-engine"
+version = "1.0.0"
+description = "Multi-Tenant Marketing Automation, CRM Integration, AI Qualification & Multi-Touch Attribution Platform"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.29.0",
+    "pydantic[email]>=2.6.4",
+    "pydantic-settings>=2.2.1",
+    "sqlalchemy[asyncio]>=2.0.28",
+    "asyncpg>=0.29.0",
+    "alembic>=1.13.1",
+    "pgvector>=0.2.5",
+    "redis>=5.0.3",
+    "celery[redis]>=5.3.6",
+    "httpx>=0.27.0",
+    "cryptography>=42.0.5",
+    "pyjwt[crypto]>=2.8.0",
+    "passlib[argon2]>=1.7.4",
+    "argon2-cffi>=23.1.0",
+    "openai>=1.14.1",
+    "structlog>=24.1.0",
+    "prometheus-client>=0.20.0",
+    "python-multipart>=0.0.9",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.1.1",
+    "pytest-asyncio>=0.23.6",
+    "pytest-mock>=3.14.0",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.3.3",
+    "mypy>=1.9.0",
+    "types-redis>=4.6.0.20240311",
+    "types-passlib>=1.7.7.20240106",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "C4", "UP", "ARG", "SIM"]
+ignore = ["B008"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+ignore_missing_imports = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

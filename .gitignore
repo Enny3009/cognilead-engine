@@ -1,0 +1,26 @@
+cat << 'EOF' > .gitignore
+# Environment & Secrets (NEVER COMMIT)
+.env
+*.env
+*.pem
+*.key
+
+# Python runtime & virtual environments
+.venv/
+venv/
+ENV/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Testing, typing & coverage
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Logs & OS artifacts
+*.log
+.DS_Store
+EOF
