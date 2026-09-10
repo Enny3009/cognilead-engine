@@ -1,8 +1,10 @@
 from app.models.base import Base, TenantMixin, TimestampMixin
 from app.models.campaign import Campaign, LeadSource
 from app.models.crm import Company, Contact, Deal, Pipeline, PipelineStage
+from app.models.knowledge import KnowledgeChunk, KnowledgeDocument
 from app.models.lead import Lead, LeadActivity, LeadScore
 from app.models.organization import Organization, OrganizationMember
+from app.models.qualification import AIClassification, LeadQualification
 from app.models.user import User
 
 __all__ = [
@@ -22,4 +24,8 @@ __all__ = [
     "Pipeline",
     "PipelineStage",
     "Deal",
+    "KnowledgeDocument",
+    "KnowledgeChunk",
+    "LeadQualification",
+    "AIClassification",
 ]

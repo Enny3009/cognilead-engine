@@ -15,12 +15,16 @@ class LeadScoreRead(BaseModel):
 
 
 class LeadActivityRead(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
     id: uuid.UUID
     activity_type: str
     description: str
-    metadata_: dict[str, Any] = Field(..., alias="metadata")
+    metadata_: dict[str, Any] = Field(
+        ...,
+        validation_alias="metadata_",
+        serialization_alias="metadata",
+    )
     created_at: datetime
 
 

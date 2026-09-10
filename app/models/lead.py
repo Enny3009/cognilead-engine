@@ -50,6 +50,9 @@ class Lead(Base, TenantMixin, TimestampMixin):
     activities: Mapped[list["LeadActivity"]] = relationship(
         "LeadActivity", back_populates="lead", cascade="all, delete-orphan", order_by="LeadActivity.created_at.desc()"
     )
+    qualification: Mapped["LeadQualification | None"] = relationship(  # type: ignore[name-defined] # noqa: F821
+        "LeadQualification", back_populates="lead", uselist=False, cascade="all, delete-orphan"
+    )
 
 
 class LeadScore(Base):
