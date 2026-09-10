@@ -9,6 +9,8 @@ celery_app = Celery(
     include=[
         "app.workers.lead_tasks",
         "app.workers.ai_tasks",
+        "app.workers.workflow_tasks",
+        "app.workers.dispatch_tasks",
     ],
 )
 
