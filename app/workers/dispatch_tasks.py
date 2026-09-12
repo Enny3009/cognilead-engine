@@ -4,6 +4,7 @@ import uuid
 import structlog
 from sqlalchemy import select
 import redis.asyncio as aioredis
+from app.integrations.factory import IntegrationFactory
 
 from app.core.config import settings
 from app.core.database import AsyncSessionLocal
@@ -57,7 +58,7 @@ async def _dispatch_sync(
             if not endpoint or not lead:
                 return {"status": "ERROR", "reason": "Endpoint or Lead entity missing."}
 
-            crm_client = MockCRMClient()
+            crm_client = IntegrationFactory.get_adapter(endpoint.platform)
             payload = {
                 "lead_id": str(lead.id),
                 "email": lead.email,

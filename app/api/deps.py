@@ -1,11 +1,13 @@
 from collections.abc import AsyncGenerator
 import uuid
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Header
 from fastapi.security import OAuth2PasswordBearer
 import jwt
 from pydantic import ValidationError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from app.core.redis import get_redis_client
+from app.services.idempotency import IdempotencyService
 
 from app.core.config import settings
 from app.core.database import get_db_session
@@ -91,3 +93,14 @@ class TenantContext:
         self.user_id: uuid.UUID = current_user.id
         self.user: User = current_user
         self.db: AsyncSession = db
+
+
+async def verify_idempotency_key(
+    idempotency_key: str = Header(..., alias="Idempotency-Key"),
+    redis=Depends(get_redis_client)
+) -> str:
+    service = IdempotencyService(redis)
+    is_duplicate = await service.acquire_lock_or_is_duplicate(idempotency_key)
+    if is_duplicate:
+        raise HTTPException(status_code=409, detail="Request already processed")
+    return idempotency_key

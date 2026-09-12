@@ -54,3 +54,7 @@ async def get_campaign_performance(
 ) -> list[CampaignPerformanceRead]:
     service = AttributionService(tenant.db)
     return await service.calculate_campaign_performance(tenant.organization_id)
+
+@router.get("/leads")
+async def get_lead_analytics():
+    return {"status": "Not Implemented"}  

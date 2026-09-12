@@ -5,6 +5,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
 import structlog
+from app.core.exceptions import http_error_handler, validation_exception_handler
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 import app.models  # Ensures all ORM relationships are registered
 from app.api.v1.router import api_router
@@ -44,6 +47,8 @@ app.add_middleware(
 
 # Mount all V1 API routes
 app.include_router(api_router, prefix=settings.API_V1_STR)
+app.add_exception_handler(StarletteHTTPException, http_error_handler)
+app.add_exception_handler(RequestValidationError, validation_exception_handler)
 
 
 @app.get("/health/live", tags=["Health"], status_code=status.HTTP_200_OK)

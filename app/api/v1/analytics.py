@@ -55,3 +55,7 @@ async def get_dashboard_summary(
         total_pipeline_value=Decimal(str(total_pipeline)),
         average_lead_score=avg_score,
     )
+
+@router.get("/leads")
+async def get_lead_analytics():
+    return {"status": "Not Implemented"}
