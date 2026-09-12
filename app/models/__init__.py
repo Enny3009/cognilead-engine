@@ -1,3 +1,4 @@
+from app.models.attribution import AttributionTouchpoint, CampaignAttributionRollup
 from app.models.base import Base, TenantMixin, TimestampMixin
 from app.models.campaign import Campaign, LeadSource
 from app.models.crm import Company, Contact, Deal, Pipeline, PipelineStage
@@ -44,4 +45,6 @@ __all__ = [
     "IntegrationEndpoint",
     "IntegrationDelivery",
     "ExternalCRMRecord",
+    "AttributionTouchpoint",
+    "CampaignAttributionRollup",
 ]

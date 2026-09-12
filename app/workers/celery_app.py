@@ -1,4 +1,5 @@
 from celery import Celery
+from celery.schedules import crontab
 from kombu import Exchange, Queue
 from app.core.config import settings
 
@@ -11,10 +12,10 @@ celery_app = Celery(
         "app.workers.ai_tasks",
         "app.workers.workflow_tasks",
         "app.workers.dispatch_tasks",
+        "app.workers.scheduled_tasks",
     ],
 )
 
-# Standard direct exchange for routing marketing automation events
 default_exchange = Exchange("cognilead", type="direct")
 dlx_exchange = Exchange("cognilead.dlx", type="direct")
 
@@ -37,9 +38,26 @@ celery_app.conf.update(
     ),
     task_routes={
         "app.workers.lead_tasks.*": {"queue": "q.leads.ingest"},
-        "app.workers.scoring_tasks.*": {"queue": "q.leads.score"},
         "app.workers.ai_tasks.*": {"queue": "q.leads.ai"},
         "app.workers.workflow_tasks.*": {"queue": "q.workflows.engine"},
         "app.workers.dispatch_tasks.*": {"queue": "q.integrations.dispatch"},
+        "app.workers.scheduled_tasks.*": {"queue": "q.workflows.engine"},
+    },
+    beat_schedule={
+        # Every 5 minutes: inspect circuit breakers in OPEN state
+        "evaluate-circuit-breakers-every-5m": {
+            "task": "app.workers.scheduled_tasks.evaluate_circuit_breakers_task",
+            "schedule": 300.0,
+        },
+        # Every 1 hour: aggregate attribution rollups across campaigns
+        "refresh-attribution-rollups-hourly": {
+            "task": "app.workers.scheduled_tasks.refresh_attribution_rollups_task",
+            "schedule": 3600.0,
+        },
+        # Daily at 00:00 UTC: sweep stale uncontacted leads past SLA
+        "flag-stale-leads-daily": {
+            "task": "app.workers.scheduled_tasks.flag_stale_leads_task",
+            "schedule": crontab(hour=0, minute=0),
+        },
     },
 )

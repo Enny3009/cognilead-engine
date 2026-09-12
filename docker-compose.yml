@@ -54,6 +54,7 @@ services:
       - ./app:/app/app
       - ./migrations:/app/migrations
       - ./alembic.ini:/app/alembic.ini
+      - ./tests:/app/tests
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
   worker:
@@ -71,6 +72,7 @@ services:
       - .env
     volumes:
       - ./app:/app/app
+      - ./tests:/app/tests
     command: celery -A app.workers.celery_app.celery_app worker --loglevel=info -Q q.leads.ingest,q.leads.score,q.leads.ai,q.workflows.engine,q.integrations.dispatch,q.leads.dlx --concurrency=4
 
   beat:
